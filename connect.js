@@ -1,7 +1,7 @@
 (function () {
     "use strict";
 
-    var baseUrl = '{{{base}}}';
+    var baseUrl = 'https://app.quantimo.do';
     var mainDiv;
     var listData;
     var popup;
