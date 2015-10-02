@@ -1,7 +1,12 @@
 (function () {
     "use strict";
 
-    var baseUrl = 'https://app.quantimo.do';
+    if (typeof mashapeKey !== 'undefined' && mashapeKey) {
+        var baseUrl = 'https://quantimodo-quantimodo-v1.p.mashape.com';
+    } else {
+        var baseUrl = '{{{base}}}';
+    }
+
     var mainDiv;
     var listData;
     var popup;
@@ -9,12 +14,14 @@
     var callbackCancelTimeout = null;
     var useConnectionWindow = true;
     var methodsDelegated = false;
+    var access_token;
+    var mashapeKey;
 
     var templatePopup =
         '<div id="qm-popup">' +
         '    <div id="qm-popup-inner">' +
         '        <h2>Connect</h2>' +
-        '        <img id="qm-close" alt="x" src="<%= baseUrl %>/qm-connect/close.png">' +
+        '        <img id="qm-close" alt="x" src="https://app.quantimo.do/qm-connect/close.png">' +
         '        <div id="qm-main"></div>' +
         '    </div>' +
         '</div>';
@@ -24,7 +31,7 @@
         '    <div class="qm-account-block-left">' +
         '        <img class="qm-connect-image" src="<%= image %>" alt="<%= displayName %> logo">' +
         '        <% if (connected) { %>' +
-        '            <img class="qm-connector-status" src="<%= baseUrl %>/qm-connect/connected.png">' +
+        '            <img class="qm-connector-status" src="https://app.quantimo.do/qm-connect/connected.png">' +
         '        <% } %>' +
         '    </div>' +
         '    <div class="qm-account-block-right">' +
@@ -75,6 +82,22 @@
         });
     };
 
+    window.qmSetupOnIonic = function() {
+        baseUrl = config.getURL();
+        access_token = localStorage[config.appSettings.storage_identifier+'accessToken'];
+        if(config.get('use_mashape') && config.getMashapeKey())
+            mashapeKey = config.getMashapeKey();
+        useConnectionWindow = false;
+
+        document.body.innerHTML = '<div id="qm-main"></div>';
+        mainDiv = document.getElementById('qm-main');
+        showLoader(true);
+        loadConnectors(function () {
+            renderMain();
+            showLoader(false);
+        });
+    };
+
     window.qmSetupOnMobile = function () {
         useConnectionWindow = false;
         document.body.innerHTML = '<div id="qm-main"></div>';
@@ -91,23 +114,23 @@
         data.baseUrl = baseUrl;
         data.timeDiff = timeDiff;
         var fn = new Function("obj",
-            "var p=[],print=function(){p.push.apply(p,arguments);};" +
-            "with(obj){p.push('" +
-            str
-                .replace(/[\r\t\n]/g, " ")
-                .split("<%").join("\t")
-                .replace(/((^|%>)[^\t]*)'/g, "$1\r")
-                .replace(/\t=(.*?)%>/g, "',$1,'")
-                .split("\t").join("');")
-                .split("%>").join("p.push('")
-                .split("\r").join("\\'")
-            + "');}return p.join('');");
+                "var p=[],print=function(){p.push.apply(p,arguments);};" +
+                "with(obj){p.push('" +
+                str
+                    .replace(/[\r\t\n]/g, " ")
+                    .split("<%").join("\t")
+                    .replace(/((^|%>)[^\t]*)'/g, "$1\r")
+                    .replace(/\t=(.*?)%>/g, "',$1,'")
+                    .split("\t").join("');")
+                    .split("%>").join("p.push('")
+                    .split("\r").join("\\'")
+                + "');}return p.join('');");
         return fn(data);
     }
 
     function matches(el, selector) {
         return (el.matches || el.matchesSelector || el.msMatchesSelector ||
-        el.mozMatchesSelector || el.webkitMatchesSelector || el.oMatchesSelector)
+            el.mozMatchesSelector || el.webkitMatchesSelector || el.oMatchesSelector)
             .call(el, selector);
     }
 
@@ -320,6 +343,19 @@
             '}' +
             '.qm-account-block:last-child hr {' +
             '    display: none;' +
+            '}' +
+            '@media (min-width: 640px){' +
+            '    #qm-loader {' +
+            '           left:calc(50% - 250px);' +
+            '           top: calc(50% - 125px);' +
+            '  }' +
+            '}' +
+            '@media (max-width: 639px){' +
+            '    #qm-loader {' +
+            '           width: 125px;' +
+            '           left:calc(50% - 60px);' +
+            '           top: calc(50% - 125px);' +
+            '  }'+
             '}';
 
         var head = document.head || document.getElementsByTagName('head')[0];
@@ -347,6 +383,16 @@
         if (typeof access_token !== 'undefined' && access_token) {
             //access_token should be obtained from QuantiModo API server
             request.setRequestHeader('Authorization', 'Bearer ' + access_token);
+        }
+
+        if (typeof accessToken !== 'undefined' && accessToken) {
+            //access_token should be obtained from QuantiModo API server
+            request.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+        }
+
+        if (typeof mashapeKey !== 'undefined' && mashapeKey) {
+            //mashape key to perform API requests
+            request.setRequestHeader('X-Mashape-Key', mashapeKey);
         }
 
         request.onload = function () {
@@ -521,7 +567,7 @@
         var loader = document.getElementById('qm-loader');
         if (!loader) {
             var img = document.createElement("img");
-            img.src = baseUrl + '/qm-connect/loader.gif';
+            img.src = 'https://app.quantimo.do/qm-connect/loader.gif';
             img.setAttribute('id', 'qm-loader');
             img.style.display = 'none';
             img.style.position = 'absolute';
@@ -529,10 +575,10 @@
             loader = document.getElementById('qm-loader');
         }
         if (show) {
-            var top = (window.innerHeight - 32) / 2;
-            var left = (window.innerWidth - 32) / 2;
-            loader.style.top = top + 'px';
-            loader.style.left = left + 'px';
+            // var top = (window.innerHeight - 32) / 2;
+            // var left = (window.innerWidth - 32) / 2;
+            // loader.style.top = top + 'px';
+            // loader.style.left = left + 'px';
             loader.style.display = 'block';
         } else {
             loader.style.display = 'none';
