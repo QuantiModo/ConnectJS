@@ -1,0 +1,19 @@
+{
+  "name": "quantimodo/connectjs",
+  "homepage": "https://github.com/QuantiModo/ConnectJS",
+  "description": "Quantimodo's embeddable JavaScript to import Data from external data sources",
+  "license": "MIT",
+  "type": "js-library",
+  "keywords": [
+    "api",
+    "sdk",
+    "javascript",
+    "quantimodo"
+  ],
+  "authors": [
+    {
+      "name": "QuantiModo",
+      "email": "mike@quantimo.do"
+    }
+  ]
+}
