@@ -39,7 +39,7 @@
         '        <% if (connected && lastUpdate) { %>' +
         '            <div class="qm-account-last-updated">Last updated <%= timeDiff(new Date(lastUpdate * 1000), " ago") %>: <%= totalMeasurementsInLastUpdate %> new measurements</div>' +
         '        <% } %>' +
-        '        <% if (errorMessage) { %><div class="qm-account-block-error"><%= errorMessage %></div><% } %>' +
+        '        <% if (errorMessage) { %><span class="qm-account-block-error"><%= errorMessage %></span><br><% } %>' +
         '        <span><%= shortDescription %></span>' +
         '    </div>' +
         '    <div class="clear"></div>' +
@@ -47,6 +47,9 @@
         '    <div class="qm-account-block-bottom">' +
         '        <% if (connected && updateStatus == "WAITING") { %>' +
         '           <a class="qm-button qm-account-scheduled-button" href="#">Update Scheduled</a>' +
+        '           <a class="qm-button qm-account-disconnect-button" href="#">Disconnect</a>' +
+        '        <% } else if (connected && updateStatus == "UPDATING") { %>' +
+        '           <a class="qm-button qm-account-sync-button" href="#">Updating</a>' +
         '           <a class="qm-button qm-account-disconnect-button" href="#">Disconnect</a>' +
         '        <% } else if (connected) { %>' +
         '           <a class="qm-button qm-account-sync-button" href="#">Sync</a>' +
@@ -84,8 +87,8 @@
 
     window.qmSetupOnIonic = function() {
         baseUrl = config.getURL();
-        access_token = localStorage[config.appSettings.storage_identifier+'accessToken'];
-        if(config.get('use_mashape') && config.getMashapeKey())
+        access_token = localStorage[config.appSettings.storage_identifier + 'accessToken'];
+        if (config.get('use_mashape') && config.getMashapeKey())
             mashapeKey = config.getMashapeKey();
         useConnectionWindow = false;
 
@@ -116,17 +119,17 @@
         data.baseUrl = baseUrl;
         data.timeDiff = timeDiff;
         var fn = new Function("obj",
-                "var p=[],print=function(){p.push.apply(p,arguments);};" +
-                "with(obj){p.push('" +
-                str
-                    .replace(/[\r\t\n]/g, " ")
-                    .split("<%").join("\t")
-                    .replace(/((^|%>)[^\t]*)'/g, "$1\r")
-                    .replace(/\t=(.*?)%>/g, "',$1,'")
-                    .split("\t").join("');")
-                    .split("%>").join("p.push('")
-                    .split("\r").join("\\'")
-                + "');}return p.join('');");
+            "var p=[],print=function(){p.push.apply(p,arguments);};" +
+            "with(obj){p.push('" +
+            str
+                .replace(/[\r\t\n]/g, " ")
+                .split("<%").join("\t")
+                .replace(/((^|%>)[^\t]*)'/g, "$1\r")
+                .replace(/\t=(.*?)%>/g, "',$1,'")
+                .split("\t").join("');")
+                .split("%>").join("p.push('")
+                .split("\r").join("\\'")
+            + "');}return p.join('');");
         return fn(data);
     }
 
@@ -275,7 +278,7 @@
             '    width: 132px;' +
             '}' +
             '.qm-account-block-right {' +
-            '    margin-left: 132px;' +
+            '    float: left;' +
             '    position:relative;' +
             '}' +
             '.qm-account-block-error {' +
@@ -294,7 +297,7 @@
             '}' +
             '.qm-account-block-bottom {' +
             '    clear: both;' +
-            '    margin-bottom: 50px;' +
+            '    margin-bottom: 10px;' +
             '}' +
             'img.qm-connect-image {' +
             '    width: 116px;' +
@@ -308,9 +311,9 @@
             '    width: 50px;' +
             '}' +
             '.qm-account-name {' +
-            '    font-size: 1.3em;' +
+            '    font-size: 1.5em;' +
             '    font-family: sans-serif;' +
-            '    font-weight: normal;' +
+            '    font-weight: bold;' +
             '    margin: 0;' +
             '    margin-bottom: 13px' +
             '}' +
@@ -324,12 +327,13 @@
             'a.qm-button {' +
             '    display: inline-block; ' +
             '    margin: 0px;' +
-            '    color: #1a8812;' +
-            '    font-size: 1.2em;' +
+            '    color: #2a6496;' +
+            '    font-size: 1.4em;' +
+            '    font-weight: 500;' +
             '    text-decoration: none;' +
             '    text-transform: uppercase;' +
             '    width: 49%;' +
-            '    margin-top: 15px;' +
+            '    margin-top: 5px;' +
             '    text-align: center;' +
             '}' +
             '.qm-account-block-field-text {' +
@@ -337,6 +341,9 @@
             '    width: 80px;' +
             '    margin-right: 10px;' +
             '    margin-top: 10px;' +
+            '}' +
+            'div.clear {' +
+            '   clear: both;' +
             '}' +
             '@media (max-width: 640px) {' +
             '    .qm-account-last-updated {' +
@@ -357,7 +364,7 @@
             '           width: 125px;' +
             '           left:calc(50% - 60px);' +
             '           top: calc(50% - 125px);' +
-            '  }'+
+            '  }' +
             '}';
 
         var head = document.head || document.getElementsByTagName('head')[0];
@@ -566,22 +573,34 @@
     }
 
     function showLoader(show) {
-        var loader = document.getElementById('qm-loader');
+        var loader = document.getElementById('qm-loader-wrapper');
+
         if (!loader) {
-            var img = document.createElement("img");
-            img.src = 'https://app.quantimo.do/qm-connect/loader.gif';
+            var loaderWrapper = document.createElement('div');
+            loaderWrapper.style.display = 'flex';
+            loaderWrapper.style['align-items'] = 'center';
+            loaderWrapper.style['justify-content'] = 'center';
+            loaderWrapper.style.position = 'absolute';
+            loaderWrapper.style.top = '0';
+            loaderWrapper.style.left = '0';
+            loaderWrapper.style.height = '100%';
+            loaderWrapper.style.width = '100%';
+            loaderWrapper.style['background-color'] = 'rgba(255, 255, 255, 0.75)';
+            loaderWrapper.style['z-index'] = '30';
+            loaderWrapper.setAttribute('id', 'qm-loader-wrapper');
+
+            var img = document.createElement('img');
+            img.src = 'https://app.quantimo.do/qm-connect/loader_gears.gif';
             img.setAttribute('id', 'qm-loader');
-            img.style.display = 'none';
-            img.style.position = 'absolute';
-            document.body.appendChild(img);
-            loader = document.getElementById('qm-loader');
+            img.style['z-index'] = '31';
+
+            loaderWrapper.appendChild(img);
+            document.body.appendChild(loaderWrapper);
+
+            loader = document.getElementById('qm-loader-wrapper');
         }
         if (show) {
-            // var top = (window.innerHeight - 32) / 2;
-            // var left = (window.innerWidth - 32) / 2;
-            // loader.style.top = top + 'px';
-            // loader.style.left = left + 'px';
-            loader.style.display = 'block';
+            loader.style.display = 'flex';
         } else {
             loader.style.display = 'none';
         }
@@ -613,10 +632,10 @@
         var authWindow;
         var windowSize = {
             width: Math.floor(window.outerWidth * 0.8),
-            height: Math.floor(window.outerHeight * 0.5)
+            height: Math.floor(window.outerHeight * 0.7)
         };
-        if (windowSize.height < 350) {
-            windowSize.height = Math.min(350, window.outerHeight);
+        if (windowSize.height < 500) {
+            windowSize.height = Math.min(500, window.outerHeight);
         }
         if (windowSize.width < 800) {
             windowSize.width = Math.min(800, window.outerWidth);
