@@ -89,7 +89,9 @@
             mashapeKey = config.getMashapeKey();
         useConnectionWindow = false;
 
-        document.body.innerHTML = '<div id="qm-main"></div>';
+        var theDiv = document.getElementById('import_iframe');
+        theDiv.innerHTML = '<div id="qm-main"></div>';
+
         mainDiv = document.getElementById('qm-main');
         showLoader(true);
         loadConnectors(function () {
