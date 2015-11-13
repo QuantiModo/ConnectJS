@@ -1,2 +1,2 @@
-# ConnectJS
-Embeddable script for connecting QuantiModo connectors
+# Impoort Data
+Embeddable JavaScript for importing data QuantiModo from other services
