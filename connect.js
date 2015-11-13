@@ -318,9 +318,6 @@
             '    margin-bottom: 13px' +
             '}' +
             '.qm-account-last-updated {' +
-            '    position: absolute;' +
-            '    right: 0px;' +
-            '    top: 5px;' +
             '    color: gray;' +
             '    font-size: 0.9em;' +
             '}' +
