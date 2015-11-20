@@ -450,7 +450,45 @@
             }
             targetUrl += "?" + queryParams.join('&');
         }
-        window.location = targetUrl;
+
+        var theDiv = document.getElementById('import_iframe');
+        if(theDiv){
+
+            theDiv.scrollIntoView();
+
+            var iframe = document.createElement('iframe');
+
+            iframe.src = targetUrl;
+            iframe.style.cssText += "width:100% !important; height:300px !important; border: solid 1px gray; padding: 10px;";
+            
+            var qmmain = document.getElementById('qm-main');
+            
+            theDiv.insertBefore(iframe, qmmain);
+
+            var closeButton = document.createElement("input");
+
+            closeButton.type = "button";
+            closeButton.value = "Close";
+            closeButton.style.cssText += "width: 100%; margin-bottom: 20px; border-width: 1px; height: 30px;";
+            
+            closeButton.onclick = function(){
+                theDiv.removeChild(closeButton);
+                theDiv.removeChild(hr);
+                theDiv.removeChild(iframe);
+
+                window.qmSetupOnIonic();
+            };
+
+            theDiv.insertBefore(closeButton, qmmain);
+
+            var hr = document.createElement('hr');
+            theDiv.insertBefore(hr, qmmain);
+
+            showLoader(false);
+
+        } else {
+            window.location = targetUrl;
+        }
     }
 
     function addFieldsFromConnectButton(button, block, instructions) {
