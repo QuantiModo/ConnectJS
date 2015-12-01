@@ -1,4 +1,4 @@
-(function () {
+(function connectjs() {
     "use strict";
 
     if (typeof mashapeKey !== 'undefined' && mashapeKey) {
@@ -86,6 +86,7 @@
     };
 
     window.qmSetupOnIonic = function() {
+        connectjs();
         baseUrl = config.getURL();
         access_token = localStorage[config.appSettings.storage_identifier + 'accessToken'];
         if (config.get('use_mashape') && config.getMashapeKey())
@@ -451,44 +452,26 @@
             targetUrl += "?" + queryParams.join('&');
         }
 
-        var theDiv = document.getElementById('import_iframe');
-        if(theDiv){
-
-            theDiv.scrollIntoView();
-
-            var iframe = document.createElement('iframe');
-
-            iframe.src = targetUrl;
-            iframe.style.cssText += "width:100% !important; height:300px !important; border: solid 1px gray; padding: 10px;";
-            
-            var qmmain = document.getElementById('qm-main');
-            
-            theDiv.insertBefore(iframe, qmmain);
-
-            var closeButton = document.createElement("input");
-
-            closeButton.type = "button";
-            closeButton.value = "Close";
-            closeButton.style.cssText += "width: 100%; margin-bottom: 20px; border-width: 1px; height: 30px;";
-            
-            closeButton.onclick = function(){
-                theDiv.removeChild(closeButton);
-                theDiv.removeChild(hr);
-                theDiv.removeChild(iframe);
-
-                window.qmSetupOnIonic();
-            };
-
-            theDiv.insertBefore(closeButton, qmmain);
-
-            var hr = document.createElement('hr');
-            theDiv.insertBefore(hr, qmmain);
-
-            showLoader(false);
-
-        } else {
-            window.location = targetUrl;
-        }
+        if(typeof ionic !== "undefined" && ionic){
+            if(ionic.Platform.platforms[0] === "browser"){
+                // browser
+                var ref = window.open(targetUrl,'', "width=600,height=800");
+                var pollTimer = window.setInterval(function() {
+                    if (ref.closed !== false) { // !== is required for compatibility with Opera
+                        window.clearInterval(pollTimer);
+                        showLoader(false);
+                        window.qmSetupOnIonic();
+                    }
+                }, 200);
+            } else {
+                // mobile
+                var ref = window.open(targetUrl,'_blank', 'location=no,toolbar=yes');
+                ref.addEventListener('exit', function(){
+                    showLoader(false);
+                    window.qmSetupOnIonic();
+                });
+            }
+        } else window.location = targetUrl;
     }
 
     function addFieldsFromConnectButton(button, block, instructions) {
@@ -688,6 +671,7 @@
         if (authWindow) {
             authWindow.focus();
         }
+
         return authWindow;
     }
 
