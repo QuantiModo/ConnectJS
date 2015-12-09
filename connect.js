@@ -283,11 +283,10 @@
             '    position:relative;' +
             '}' +
             '.qm-account-block-error {' +
-            '    border: solid 1px red;' +
+            '    border: solid 1px #2a6496;' +
             '    text-align: center;' +
             '    width: 90%;' +
             '    margin: 0 auto;' +
-            '    background-color: pink;' +
             '    padding: 3px;' +
             '    color: red;' +
             '}' +
