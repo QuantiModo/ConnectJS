@@ -30,22 +30,24 @@
         '<div class="qm-account-block" data-name="<%= name %>">' +
         '    <div class="qm-account-block-left">' +
         '        <img class="qm-connect-image" src="<%= image %>" alt="<%= displayName %> logo">' +
-        '        <% if (connected) { %>' +
+        '        <% if (!qmClient && connected) { %>' +
         '            <img class="qm-connector-status" src="https://app.quantimo.do/qm-connect/connected.png">' +
         '        <% } %>' +
         '    </div>' +
         '    <div class="qm-account-block-right">' +
         '        <h4 class="qm-account-name"><%= displayName %></h4>' +
-        '        <% if (connected && lastUpdate) { %>' +
+        '        <% if (!qmClient && connected && lastUpdate) { %>' +
         '            <div class="qm-account-last-updated">Last updated <%= timeDiff(new Date(lastUpdate * 1000), " ago") %>: <%= totalMeasurementsInLastUpdate %> new measurements</div>' +
         '        <% } %>' +
-        '        <% if (errorMessage) { %><span class="qm-account-block-error"><%= errorMessage %></span><br><% } %>' +
+        '        <% if (!qmClient && errorMessage) { %><span class="qm-account-block-error"><%= errorMessage %></span><br><% } %>' +
         '        <span><%= shortDescription %></span>' +
         '    </div>' +
         '    <div class="clear"></div>' +
         '    <div class="qm-account-block-fields"></div>' +
         '    <div class="qm-account-block-bottom">' +
-        '        <% if (connected && updateStatus == "WAITING") { %>' +
+        '        <% if (qmClient) { %>' +
+        '            <a class="qm-button qm-account-get-button" target="_blank" href="<%= getItUrl %>">GET IT HERE</a>' +
+        '        <% } else if (connected && updateStatus == "WAITING") { %>' +
         '           <a class="qm-button qm-account-scheduled-button" href="#">Update Scheduled</a>' +
         '           <a class="qm-button qm-account-disconnect-button" href="#">Disconnect</a>' +
         '        <% } else if (connected && updateStatus == "UPDATING") { %>' +
@@ -262,7 +264,7 @@
             '    padding:10px 50px;' +
             '    border:2px solid gray;' +
             '    border-radius:10px;' +
-            '    background-color:#fff;' +
+            //'    background-color:#fff;' +
             '    position: relative;' +
             '}' +
             '#qm-close {' +
@@ -283,7 +285,7 @@
             '    position:relative;' +
             '}' +
             '.qm-account-block-error {' +
-            '    border: solid 1px #2a6496;' +
+            '    border: solid 0px #2a6496;' +
             '    text-align: center;' +
             '    width: 90%;' +
             '    margin: 0 auto;' +
@@ -330,6 +332,7 @@
             '    text-decoration: none;' +
             '    text-transform: uppercase;' +
             '    width: 49%;' +
+            '    max-width: 250px;' +
             '    margin-top: 5px;' +
             '    text-align: center;' +
             '}' +
@@ -602,7 +605,7 @@
             loaderWrapper.style.left = '0';
             loaderWrapper.style.height = '100%';
             loaderWrapper.style.width = '100%';
-            loaderWrapper.style['background-color'] = 'rgba(255, 255, 255, 0.75)';
+            //loaderWrapper.style['background-color'] = 'rgba(255, 255, 255, 0.75)';
             loaderWrapper.style['z-index'] = '30';
             loaderWrapper.setAttribute('id', 'qm-loader-wrapper');
 
